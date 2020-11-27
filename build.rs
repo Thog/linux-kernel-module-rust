@@ -155,7 +155,7 @@ fn prepare_cflags(cflags: &str, kernel_dir: &str) -> Option<Vec<String>> {
                 }
             }
 
-            if (is_safe) {
+            if is_safe {
                 continue;
             }
 
