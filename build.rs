@@ -137,7 +137,7 @@ fn prepare_cflags(cflags: &str, kernel_dir: &str) -> Option<Vec<String>> {
                 kernel_args.push(format!("{}/{}", kernel_dir, include_path));
             }
         } else if arg.starts_with("-fplugin=") {
-            continue;
+            let mut is_safe = false;
             let plugin_filename = arg.strip_prefix("-fplugin=").unwrap();
             let plugin_basename = Path::new(&plugin_filename).file_stem().unwrap();
             for (known_plugin, abi_safe) in KNOWN_PLUGINS {
@@ -149,9 +149,16 @@ fn prepare_cflags(cflags: &str, kernel_dir: &str) -> Option<Vec<String>> {
                     if known_plugin == &"stackleak_plugin" {
                         println!("cargo:warning=Rust code will not call stackleak, potentially weakining stackleak's protection.");
                     }
-                    continue;
+
+                    is_safe = true;
+                    break;
                 }
             }
+
+            if (is_safe) {
+                continue;
+            }
+
             eprintln!("Your kernel uses the {:?} plugin, which we don't know about.", plugin_basename);
             eprintln!("Edit linux-kernel-module-rust/build.rs if it doesn't change the ABI.");
             return None;
